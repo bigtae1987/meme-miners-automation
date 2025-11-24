@@ -28,7 +28,8 @@ jobs:
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
           TAOSTATS_API_KEY: ${{ secrets.TAOSTATS_API_KEY }}
-          MINER_ADDRESSES: ${{ vars.MINER_ADDRESSES || secrets.MINER_ADDRESSES }}
-          TAO_LOOKBACK_DAYS: ${{ vars.TAO_LOOKBACK_DAYS || '1' }}
-          TAOST
-
+          MINER_ADDRESSES: ${{ secrets.MINER_ADDRESSES }}
+          TAO_LOOKBACK_DAYS: "1"
+          TAOSTATS_BASE_URL: "https://taostats.io/api/v1"
+        run: |
+          python scripts/daily_tao_to_discord.py
