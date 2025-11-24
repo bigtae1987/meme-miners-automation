@@ -2,9 +2,9 @@ name: Daily TAO Earnings to Discord
 
 on:
   schedule:
-    # Runs every day at 23:55 UTC. Adjust as needed.
+    # Runs every day at 23:55 UTC (6:55 PM Eastern).
     - cron: "55 23 * * *"
-  workflow_dispatch:  # allows manual run from GitHub UI
+  workflow_dispatch:
 
 jobs:
   post-daily-tao:
