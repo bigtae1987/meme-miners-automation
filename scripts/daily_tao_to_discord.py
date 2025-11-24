@@ -15,17 +15,7 @@ import urllib.parse
 import urllib.request
 from dataclasses import dataclass
 from datetime import datetime, timezone
-from typing import Iterable, List, Mapping
-
-DISCORD_WEBHOOK_URL = os.environ.get("DISCORD_WEBHOOK_URL")
-TAOSTATS_API_KEY = os.environ.get("TAOSTATS_API_KEY")
-TAOSTATS_BASE_URL = os.environ.get("TAOSTATS_BASE_URL", "https://taostats.io/api/v1")
-MINER_ADDRESSES = [
-    addr.strip()
-    for addr in os.environ.get("MINER_ADDRESSES", "").split(",")
-    if addr.strip()
-]
-LOOKBACK_DAYS = int(os.environ.get("TAO_LOOKBACK_DAYS", "1"))
+from typing import Iterable, List, Mapping, Sequence
 
 
 @dataclass
@@ -35,26 +25,43 @@ class MinerEarning:
 
 
 class DailyTaoReporter:
-    def __init__(self) -> None:
-        if not DISCORD_WEBHOOK_URL:
+    def __init__(
+        self,
+        *,
+        webhook_url: str | None = None,
+        api_key: str | None = None,
+        base_url: str | None = None,
+        miner_addresses: Sequence[str] | None = None,
+        lookback_days: int | None = None,
+    ) -> None:
+        self.webhook_url = webhook_url or os.environ.get("DISCORD_WEBHOOK_URL")
+        self.api_key = api_key or os.environ.get("TAOSTATS_API_KEY")
+        self.base_url = base_url or os.environ.get("TAOSTATS_BASE_URL", "https://taostats.io/api/v1")
+        self.miner_addresses = list(miner_addresses or self._addresses_from_env())
+        self.lookback_days = int(lookback_days or os.environ.get("TAO_LOOKBACK_DAYS", "1"))
+
+        if not self.webhook_url:
             raise RuntimeError("DISCORD_WEBHOOK_URL environment variable is required")
-        if not TAOSTATS_API_KEY:
+        if not self.api_key:
             raise RuntimeError("TAOSTATS_API_KEY environment variable is required")
+
+    def _addresses_from_env(self) -> List[str]:
+        return [addr.strip() for addr in os.environ.get("MINER_ADDRESSES", "").split(",") if addr.strip()]
 
     def _headers(self) -> Mapping[str, str]:
         headers = {"Accept": "application/json"}
-        if TAOSTATS_API_KEY:
-            headers["Authorization"] = f"Bearer {TAOSTATS_API_KEY}"
+        if self.api_key:
+            headers["Authorization"] = f"Bearer {self.api_key}"
         return headers
 
     def _endpoint(self) -> str:
-        return f"{TAOSTATS_BASE_URL.rstrip('/')}/miners/earnings"
+        return f"{self.base_url.rstrip('/')}/miners/earnings"
 
     def fetch_earnings(self) -> List[MinerEarning]:
-        if not MINER_ADDRESSES:
+        if not self.miner_addresses:
             raise RuntimeError("No miner addresses provided via MINER_ADDRESSES")
 
-        params = urllib.parse.urlencode({"addresses": ",".join(MINER_ADDRESSES), "days": LOOKBACK_DAYS})
+        params = urllib.parse.urlencode({"addresses": ",".join(self.miner_addresses), "days": self.lookback_days})
         url = f"{self._endpoint()}?{params}"
 
         request = urllib.request.Request(url, headers=self._headers())
@@ -111,7 +118,7 @@ class DailyTaoReporter:
     def post_to_discord(self, content: str) -> None:
         payload = json.dumps({"content": content}).encode("utf-8")
         request = urllib.request.Request(
-            DISCORD_WEBHOOK_URL,
+            self.webhook_url,
             data=payload,
             headers={"Content-Type": "application/json"},
             method="POST",
