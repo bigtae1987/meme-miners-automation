@@ -32,4 +32,4 @@ jobs:
           TAO_LOOKBACK_DAYS: "1"
           TAOSTATS_BASE_URL: "https://taostats.io/api/v1"
         run: |
-          python scripts/daily_tao_to_discord.py
+          python daily_tao_to_discord.py
