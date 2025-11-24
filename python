@@ -1,0 +1,6 @@
+meme-miners-automation/
+  scripts/
+    daily_tao_to_discord.py
+  .github/
+    workflows/
+      daily-tao.yml   (we’ll create this next)
