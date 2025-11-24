@@ -1,0 +1,33 @@
+name: Daily TAO Earnings to Discord
+
+on:
+  schedule:
+    # Runs every day at 23:55 UTC. Adjust as needed.
+    - cron: "55 23 * * *"
+  workflow_dispatch: # allows manual run from GitHub UI
+    inputs: {}
+
+jobs:
+  post-daily-tao:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests
+
+      - name: Run daily TAO script
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          TAOSTATS_API_KEY: ${{ secrets.TAOSTATS_API_KEY }} # for your future Taostats integration
+        run: |
+          python scripts/daily_tao_to_discord.py
