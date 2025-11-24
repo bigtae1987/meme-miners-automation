@@ -4,8 +4,7 @@ on:
   schedule:
     # Runs every day at 23:55 UTC. Adjust as needed.
     - cron: "55 23 * * *"
-  workflow_dispatch: # allows manual run from GitHub UI
-    inputs: {}
+  workflow_dispatch:  # allows manual run from GitHub UI
 
 jobs:
   post-daily-tao:
@@ -31,7 +30,5 @@ jobs:
           TAOSTATS_API_KEY: ${{ secrets.TAOSTATS_API_KEY }}
           MINER_ADDRESSES: ${{ vars.MINER_ADDRESSES || secrets.MINER_ADDRESSES }}
           TAO_LOOKBACK_DAYS: ${{ vars.TAO_LOOKBACK_DAYS || '1' }}
-          TAOSTATS_BASE_URL: ${{ vars.TAOSTATS_BASE_URL || 'https://taostats.io/api/v1' }}
-        run: |
-          python scripts/daily_tao_to_discord.py
+          TAOST
 
